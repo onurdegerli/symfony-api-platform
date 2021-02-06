@@ -15,7 +15,7 @@
                     true,
                 ],
                 'writable' => [
-                    true,
+                    false,
                 ],
                 'required' => [
                     false,

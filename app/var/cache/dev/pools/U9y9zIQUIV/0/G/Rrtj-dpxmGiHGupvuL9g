@@ -12,7 +12,7 @@
                     $o[1],
                 ],
                 'readable' => [
-                    true,
+                    false,
                 ],
                 'writable' => [
                     false,

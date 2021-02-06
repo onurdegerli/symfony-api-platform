@@ -1,4 +1,4 @@
-vendor
+app/vendor
 .idea
-var/cache/*
-var/log/*
+app/var/cache/*
+app/var/log/*

@@ -18,6 +18,7 @@
       <parameter key="NelmioCorsBundle">Nelmio\CorsBundle\NelmioCorsBundle</parameter>
       <parameter key="ApiPlatformBundle">ApiPlatform\Core\Bridge\Symfony\Bundle\ApiPlatformBundle</parameter>
       <parameter key="MakerBundle">Symfony\Bundle\MakerBundle\MakerBundle</parameter>
+      <parameter key="WebProfilerBundle">Symfony\Bundle\WebProfilerBundle\WebProfilerBundle</parameter>
     </parameter>
     <parameter key="kernel.bundles_metadata" type="collection">
       <parameter key="FrameworkBundle" type="collection">
@@ -56,6 +57,10 @@
         <parameter key="path">/var/www/html/app/vendor/symfony/maker-bundle/src</parameter>
         <parameter key="namespace">Symfony\Bundle\MakerBundle</parameter>
       </parameter>
+      <parameter key="WebProfilerBundle" type="collection">
+        <parameter key="path">/var/www/html/app/vendor/symfony/web-profiler-bundle</parameter>
+        <parameter key="namespace">Symfony\Bundle\WebProfilerBundle</parameter>
+      </parameter>
     </parameter>
     <parameter key="kernel.charset">UTF-8</parameter>
     <parameter key="kernel.container_class">srcApp_KernelDevDebugContainer</parameter>
@@ -83,7 +88,11 @@
     <parameter key="validator.mapping.cache.prefix"></parameter>
     <parameter key="validator.mapping.cache.file">/var/www/html/app/var/cache/dev/validation.php</parameter>
     <parameter key="validator.translation_domain">validators</parameter>
-    <parameter key="data_collector.templates" type="collection"/>
+    <parameter key="translator.logging">false</parameter>
+    <parameter key="translator.default_path">/var/www/html/app/translations</parameter>
+    <parameter key="profiler_listener.only_exceptions">false</parameter>
+    <parameter key="profiler_listener.only_master_requests">false</parameter>
+    <parameter key="profiler.storage.dsn">file:/var/www/html/app/var/cache/dev/profiler</parameter>
     <parameter key="debug.error_handler.throw_at">-1</parameter>
     <parameter key="debug.container.dump">/var/www/html/app/var/cache/dev/srcApp_KernelDevDebugContainer.xml</parameter>
     <parameter key="router.request_context.host">localhost</parameter>
@@ -350,6 +359,74 @@
     </parameter>
     <parameter key="api_platform.validator.serialize_payload_fields" type="collection"/>
     <parameter key="api_platform.elasticsearch.enabled">false</parameter>
+    <parameter key="web_profiler.debug_toolbar.intercept_redirects">false</parameter>
+    <parameter key="web_profiler.debug_toolbar.mode">2</parameter>
+    <parameter key="data_collector.templates" type="collection">
+      <parameter key="data_collector.request" type="collection">
+        <parameter>request</parameter>
+        <parameter>@WebProfiler/Collector/request.html.twig</parameter>
+      </parameter>
+      <parameter key="api_platform.data_collector.request" type="collection">
+        <parameter>api_platform.data_collector.request</parameter>
+        <parameter>@ApiPlatform/DataCollector/request.html.twig</parameter>
+      </parameter>
+      <parameter key="data_collector.time" type="collection">
+        <parameter>time</parameter>
+        <parameter>@WebProfiler/Collector/time.html.twig</parameter>
+      </parameter>
+      <parameter key="data_collector.memory" type="collection">
+        <parameter>memory</parameter>
+        <parameter>@WebProfiler/Collector/memory.html.twig</parameter>
+      </parameter>
+      <parameter key="data_collector.validator" type="collection">
+        <parameter>validator</parameter>
+        <parameter>@WebProfiler/Collector/validator.html.twig</parameter>
+      </parameter>
+      <parameter key="data_collector.ajax" type="collection">
+        <parameter>ajax</parameter>
+        <parameter>@WebProfiler/Collector/ajax.html.twig</parameter>
+      </parameter>
+      <parameter key="data_collector.exception" type="collection">
+        <parameter>exception</parameter>
+        <parameter>@WebProfiler/Collector/exception.html.twig</parameter>
+      </parameter>
+      <parameter key="data_collector.logger" type="collection">
+        <parameter>logger</parameter>
+        <parameter>@WebProfiler/Collector/logger.html.twig</parameter>
+      </parameter>
+      <parameter key="data_collector.events" type="collection">
+        <parameter>events</parameter>
+        <parameter>@WebProfiler/Collector/events.html.twig</parameter>
+      </parameter>
+      <parameter key="data_collector.router" type="collection">
+        <parameter>router</parameter>
+        <parameter>@WebProfiler/Collector/router.html.twig</parameter>
+      </parameter>
+      <parameter key="data_collector.cache" type="collection">
+        <parameter>cache</parameter>
+        <parameter>@WebProfiler/Collector/cache.html.twig</parameter>
+      </parameter>
+      <parameter key="data_collector.translation" type="collection">
+        <parameter>translation</parameter>
+        <parameter>@WebProfiler/Collector/translation.html.twig</parameter>
+      </parameter>
+      <parameter key="data_collector.security" type="collection">
+        <parameter>security</parameter>
+        <parameter>@Security/Collector/security.html.twig</parameter>
+      </parameter>
+      <parameter key="data_collector.twig" type="collection">
+        <parameter>twig</parameter>
+        <parameter>@WebProfiler/Collector/twig.html.twig</parameter>
+      </parameter>
+      <parameter key="data_collector.doctrine" type="collection">
+        <parameter>db</parameter>
+        <parameter>@Doctrine/Collector/db.html.twig</parameter>
+      </parameter>
+      <parameter key="data_collector.config" type="collection">
+        <parameter>config</parameter>
+        <parameter>@WebProfiler/Collector/config.html.twig</parameter>
+      </parameter>
+    </parameter>
     <parameter key="console.command.ids" type="collection">
       <parameter>console.command.public_alias.doctrine_cache.contains_command</parameter>
       <parameter>console.command.public_alias.doctrine_cache.delete_command</parameter>
@@ -450,11 +527,15 @@
     <service id="services_resetter" class="Symfony\Component\HttpKernel\DependencyInjection\ServicesResetter" public="true">
       <argument type="iterator">
         <argument key="http_exception_listener" type="service" id="http_exception_listener" on-invalid="ignore_uninitialized"/>
+        <argument key="profiler" type="service" id="profiler" on-invalid="ignore_uninitialized"/>
+        <argument key="debug.validator" type="service" id="debug.validator" on-invalid="ignore_uninitialized"/>
         <argument key="debug.stopwatch" type="service" id="debug.stopwatch" on-invalid="ignore_uninitialized"/>
         <argument key="security.token_storage" type="service" id="security.token_storage" on-invalid="ignore_uninitialized"/>
       </argument>
       <argument type="collection">
         <argument key="http_exception_listener">reset</argument>
+        <argument key="profiler">reset</argument>
+        <argument key="debug.validator">reset</argument>
         <argument key="debug.stopwatch">reset</argument>
         <argument key="security.token_storage">setToken</argument>
       </argument>
@@ -571,21 +652,44 @@
         <argument>router:match</argument>
       </call>
     </service>
+    <service id="console.command.translation_debug" class="Symfony\Bundle\FrameworkBundle\Command\TranslationDebugCommand" public="false">
+      <tag name="console.command" command="debug:translation"/>
+      <argument type="service" id="translator.data_collector"/>
+      <argument type="service" id="translation.reader"/>
+      <argument type="service" id="translation.extractor"/>
+      <argument>/var/www/html/app/translations</argument>
+      <argument>/var/www/html/app/templates</argument>
+      <call method="setName">
+        <argument>debug:translation</argument>
+      </call>
+    </service>
+    <service id="console.command.translation_update" class="Symfony\Bundle\FrameworkBundle\Command\TranslationUpdateCommand" public="false">
+      <tag name="console.command" command="translation:update"/>
+      <argument type="service" id="translation.writer"/>
+      <argument type="service" id="translation.reader"/>
+      <argument type="service" id="translation.extractor"/>
+      <argument>en</argument>
+      <argument>/var/www/html/app/translations</argument>
+      <argument>/var/www/html/app/templates</argument>
+      <call method="setName">
+        <argument>translation:update</argument>
+      </call>
+    </service>
+    <service id="console.command.xliff_lint" class="Symfony\Bundle\FrameworkBundle\Command\XliffLintCommand" public="false">
+      <tag name="console.command" command="lint:xliff"/>
+      <call method="setName">
+        <argument>lint:xliff</argument>
+      </call>
+    </service>
     <service id="console.command.yaml_lint" class="Symfony\Bundle\FrameworkBundle\Command\YamlLintCommand" public="false">
       <tag name="console.command" command="lint:yaml"/>
       <call method="setName">
         <argument>lint:yaml</argument>
       </call>
     </service>
-    <service id="cache.app" class="Symfony\Component\Cache\Adapter\FilesystemAdapter" public="true">
+    <service id="cache.app" class="Symfony\Component\Cache\Adapter\TraceableAdapter" public="true">
       <tag name="cache.pool"/>
-      <argument>2gEz9VMKll</argument>
-      <argument>0</argument>
-      <argument>/var/www/html/app/var/cache/dev/pools</argument>
-      <argument type="service" id="cache.default_marshaller" on-invalid="ignore"/>
-      <call method="setLogger">
-        <argument type="service" id="logger" on-invalid="ignore"/>
-      </call>
+      <argument type="service" id="cache.app.recorder_inner"/>
     </service>
     <service id="cache.app.simple" class="Symfony\Component\Cache\Simple\Psr6Cache" public="false">
       <argument type="service" id="cache.app"/>
@@ -593,41 +697,21 @@
     <service id="cache.app.taggable" class="Symfony\Component\Cache\Adapter\TagAwareAdapter" public="false">
       <argument type="service" id="cache.app"/>
     </service>
-    <service id="cache.system" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="true">
+    <service id="cache.system" class="Symfony\Component\Cache\Adapter\TraceableAdapter" public="true">
       <tag name="cache.pool"/>
-      <argument>Y3-3fJ+DJs</argument>
-      <argument>0</argument>
-      <argument>%container.build_id%</argument>
-      <argument>/var/www/html/app/var/cache/dev/pools</argument>
-      <argument type="service" id="logger" on-invalid="ignore"/>
-      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+      <argument type="service" id="cache.system.recorder_inner"/>
     </service>
-    <service id="cache.validator" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+    <service id="cache.validator" class="Symfony\Component\Cache\Adapter\TraceableAdapter" public="false">
       <tag name="cache.pool"/>
-      <argument>cvCnHkHP0n</argument>
-      <argument>0</argument>
-      <argument>%container.build_id%</argument>
-      <argument>/var/www/html/app/var/cache/dev/pools</argument>
-      <argument type="service" id="logger" on-invalid="ignore"/>
-      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+      <argument type="service" id="cache.validator.recorder_inner"/>
     </service>
-    <service id="cache.serializer" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+    <service id="cache.serializer" class="Symfony\Component\Cache\Adapter\TraceableAdapter" public="false">
       <tag name="cache.pool"/>
-      <argument>lRwmGA0qDR</argument>
-      <argument>0</argument>
-      <argument>%container.build_id%</argument>
-      <argument>/var/www/html/app/var/cache/dev/pools</argument>
-      <argument type="service" id="logger" on-invalid="ignore"/>
-      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+      <argument type="service" id="cache.serializer.recorder_inner"/>
     </service>
-    <service id="cache.annotations" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+    <service id="cache.annotations" class="Symfony\Component\Cache\Adapter\TraceableAdapter" public="false">
       <tag name="cache.pool"/>
-      <argument>b2X2i+aUTz</argument>
-      <argument>0</argument>
-      <argument>%container.build_id%</argument>
-      <argument>/var/www/html/app/var/cache/dev/pools</argument>
-      <argument type="service" id="logger" on-invalid="ignore"/>
-      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+      <argument type="service" id="cache.annotations.recorder_inner"/>
     </service>
     <service id="cache.adapter.system" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false" abstract="true">
       <tag name="cache.pool" clearer="cache.system_clearer"/>
@@ -759,6 +843,10 @@
         <argument key="api_platform.cache.metadata.property" type="service" id="api_platform.cache.metadata.property" on-invalid="ignore_uninitialized"/>
       </argument>
     </service>
+    <service id="identity_translator" class="Symfony\Component\Translation\IdentityTranslator" public="false"/>
+    <service id="translator.selector" class="Symfony\Component\Translation\MessageSelector" public="false">
+      <deprecated>The "%service_id%" service is deprecated since Symfony 4.2, use "identity_translator" instead.</deprecated>
+    </service>
     <service id=".1_NativeFileSessionHandler~C0e416L" class="Symfony\Component\HttpFoundation\Session\Storage\Handler\NativeFileSessionHandler" public="false">
       <argument>/var/www/html/app/var/cache/dev/sessions</argument>
     </service>
@@ -856,12 +944,16 @@
       <argument type="service" id="cache.validator"/>
       <factory class="Symfony\Component\Cache\Adapter\PhpArrayAdapter" method="create"/>
     </service>
-    <service id="validator" class="Symfony\Component\Validator\Validator\ValidatorInterface" public="true">
-      <factory service="validator.builder" method="getValidator"/>
-    </service>
     <service id="validator.builder" class="Symfony\Component\Validator\ValidatorBuilderInterface" public="false">
       <call method="setConstraintValidatorFactory">
         <argument type="service" id="validator.validator_factory"/>
+      </call>
+      <call method="setTranslator">
+        <argument type="service">
+          <service class="Symfony\Component\Validator\Util\LegacyTranslatorProxy">
+            <argument type="service" id="translator.data_collector"/>
+          </service>
+        </argument>
       </call>
       <call method="setTranslationDomain">
         <argument>validators</argument>
@@ -897,6 +989,635 @@
       <tag name="validator.constraint_validator" alias="Symfony\Component\Validator\Constraints\EmailValidator"/>
       <argument>html5</argument>
     </service>
+    <service id="translator.default" class="Symfony\Bundle\FrameworkBundle\Translation\Translator" public="false">
+      <argument type="service" id=".service_locator.yQVjGlt"/>
+      <argument type="service" id="translator.formatter.default"/>
+      <argument>en</argument>
+      <argument type="collection">
+        <argument key="translation.loader.php" type="collection">
+          <argument>php</argument>
+        </argument>
+        <argument key="translation.loader.yml" type="collection">
+          <argument>yaml</argument>
+          <argument>yml</argument>
+        </argument>
+        <argument key="translation.loader.xliff" type="collection">
+          <argument>xlf</argument>
+          <argument>xliff</argument>
+        </argument>
+        <argument key="translation.loader.po" type="collection">
+          <argument>po</argument>
+        </argument>
+        <argument key="translation.loader.mo" type="collection">
+          <argument>mo</argument>
+        </argument>
+        <argument key="translation.loader.qt" type="collection">
+          <argument>ts</argument>
+        </argument>
+        <argument key="translation.loader.csv" type="collection">
+          <argument>csv</argument>
+        </argument>
+        <argument key="translation.loader.res" type="collection">
+          <argument>res</argument>
+        </argument>
+        <argument key="translation.loader.dat" type="collection">
+          <argument>dat</argument>
+        </argument>
+        <argument key="translation.loader.ini" type="collection">
+          <argument>ini</argument>
+        </argument>
+        <argument key="translation.loader.json" type="collection">
+          <argument>json</argument>
+        </argument>
+      </argument>
+      <argument type="collection">
+        <argument key="cache_dir">/var/www/html/app/var/cache/dev/translations</argument>
+        <argument key="debug">true</argument>
+        <argument key="resource_files" type="collection">
+          <argument key="af" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.af.xlf</argument>
+          </argument>
+          <argument key="ar" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.ar.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.ar.xlf</argument>
+          </argument>
+          <argument key="az" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.az.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.az.xlf</argument>
+          </argument>
+          <argument key="be" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.be.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.be.xlf</argument>
+          </argument>
+          <argument key="bg" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.bg.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.bg.xlf</argument>
+          </argument>
+          <argument key="ca" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.ca.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.ca.xlf</argument>
+          </argument>
+          <argument key="cs" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.cs.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.cs.xlf</argument>
+          </argument>
+          <argument key="cy" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.cy.xlf</argument>
+          </argument>
+          <argument key="da" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.da.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.da.xlf</argument>
+          </argument>
+          <argument key="de" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.de.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.de.xlf</argument>
+          </argument>
+          <argument key="el" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.el.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.el.xlf</argument>
+          </argument>
+          <argument key="en" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.en.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.en.xlf</argument>
+          </argument>
+          <argument key="es" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.es.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.es.xlf</argument>
+          </argument>
+          <argument key="et" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.et.xlf</argument>
+          </argument>
+          <argument key="eu" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.eu.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.eu.xlf</argument>
+          </argument>
+          <argument key="fa" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.fa.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.fa.xlf</argument>
+          </argument>
+          <argument key="fi" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.fi.xlf</argument>
+          </argument>
+          <argument key="fr" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.fr.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.fr.xlf</argument>
+          </argument>
+          <argument key="gl" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.gl.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.gl.xlf</argument>
+          </argument>
+          <argument key="he" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.he.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.he.xlf</argument>
+          </argument>
+          <argument key="hr" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.hr.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.hr.xlf</argument>
+          </argument>
+          <argument key="hu" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.hu.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.hu.xlf</argument>
+          </argument>
+          <argument key="hy" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.hy.xlf</argument>
+          </argument>
+          <argument key="id" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.id.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.id.xlf</argument>
+          </argument>
+          <argument key="it" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.it.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.it.xlf</argument>
+          </argument>
+          <argument key="ja" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.ja.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.ja.xlf</argument>
+          </argument>
+          <argument key="lb" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.lb.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.lb.xlf</argument>
+          </argument>
+          <argument key="lt" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.lt.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.lt.xlf</argument>
+          </argument>
+          <argument key="lv" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.lv.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.lv.xlf</argument>
+          </argument>
+          <argument key="mn" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.mn.xlf</argument>
+          </argument>
+          <argument key="nb" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.nb.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.nb.xlf</argument>
+          </argument>
+          <argument key="nl" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.nl.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.nl.xlf</argument>
+          </argument>
+          <argument key="nn" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.nn.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.nn.xlf</argument>
+          </argument>
+          <argument key="no" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.no.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.no.xlf</argument>
+          </argument>
+          <argument key="pl" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.pl.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.pl.xlf</argument>
+          </argument>
+          <argument key="pt" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.pt.xlf</argument>
+          </argument>
+          <argument key="pt_BR" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.pt_BR.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.pt_BR.xlf</argument>
+          </argument>
+          <argument key="ro" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.ro.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.ro.xlf</argument>
+          </argument>
+          <argument key="ru" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.ru.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.ru.xlf</argument>
+          </argument>
+          <argument key="sk" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.sk.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.sk.xlf</argument>
+          </argument>
+          <argument key="sl" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.sl.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.sl.xlf</argument>
+          </argument>
+          <argument key="sq" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.sq.xlf</argument>
+          </argument>
+          <argument key="sr_Cyrl" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.sr_Cyrl.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.sr_Cyrl.xlf</argument>
+          </argument>
+          <argument key="sr_Latn" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.sr_Latn.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.sr_Latn.xlf</argument>
+          </argument>
+          <argument key="sv" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.sv.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.sv.xlf</argument>
+          </argument>
+          <argument key="th" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.th.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.th.xlf</argument>
+          </argument>
+          <argument key="tl" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.tl.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.tl.xlf</argument>
+          </argument>
+          <argument key="tr" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.tr.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.tr.xlf</argument>
+          </argument>
+          <argument key="uk" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.uk.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.uk.xlf</argument>
+          </argument>
+          <argument key="vi" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.vi.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.vi.xlf</argument>
+          </argument>
+          <argument key="zh_CN" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.zh_CN.xlf</argument>
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.zh_CN.xlf</argument>
+          </argument>
+          <argument key="zh_TW" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/validator/Resources/translations/validators.zh_TW.xlf</argument>
+          </argument>
+          <argument key="pt_PT" type="collection">
+            <argument>/var/www/html/app/vendor/symfony/security-core/Resources/translations/security.pt_PT.xlf</argument>
+          </argument>
+        </argument>
+      </argument>
+      <call method="setConfigCacheFactory">
+        <argument type="service" id="config_cache_factory"/>
+      </call>
+      <call method="setFallbackLocales">
+        <argument type="collection">
+          <argument>en</argument>
+        </argument>
+      </call>
+    </service>
+    <service id="translator.logging" class="Symfony\Component\Translation\LoggingTranslator" public="false">
+      <tag name="monolog.logger" channel="translation"/>
+      <argument type="service" id="translator.logging.inner"/>
+      <argument type="service" id="logger"/>
+    </service>
+    <service id="translator.formatter.default" class="Symfony\Component\Translation\Formatter\MessageFormatter" public="false">
+      <argument type="service" id="identity_translator"/>
+    </service>
+    <service id="translation.loader.php" class="Symfony\Component\Translation\Loader\PhpFileLoader" public="false">
+      <tag name="translation.loader" alias="php"/>
+    </service>
+    <service id="translation.loader.yml" class="Symfony\Component\Translation\Loader\YamlFileLoader" public="false">
+      <tag name="translation.loader" alias="yaml" legacy_alias="yml" legacy-alias="yml"/>
+    </service>
+    <service id="translation.loader.xliff" class="Symfony\Component\Translation\Loader\XliffFileLoader" public="false">
+      <tag name="translation.loader" alias="xlf" legacy_alias="xliff" legacy-alias="xliff"/>
+    </service>
+    <service id="translation.loader.po" class="Symfony\Component\Translation\Loader\PoFileLoader" public="false">
+      <tag name="translation.loader" alias="po"/>
+    </service>
+    <service id="translation.loader.mo" class="Symfony\Component\Translation\Loader\MoFileLoader" public="false">
+      <tag name="translation.loader" alias="mo"/>
+    </service>
+    <service id="translation.loader.qt" class="Symfony\Component\Translation\Loader\QtFileLoader" public="false">
+      <tag name="translation.loader" alias="ts"/>
+    </service>
+    <service id="translation.loader.csv" class="Symfony\Component\Translation\Loader\CsvFileLoader" public="false">
+      <tag name="translation.loader" alias="csv"/>
+    </service>
+    <service id="translation.loader.res" class="Symfony\Component\Translation\Loader\IcuResFileLoader" public="false">
+      <tag name="translation.loader" alias="res"/>
+    </service>
+    <service id="translation.loader.dat" class="Symfony\Component\Translation\Loader\IcuDatFileLoader" public="false">
+      <tag name="translation.loader" alias="dat"/>
+    </service>
+    <service id="translation.loader.ini" class="Symfony\Component\Translation\Loader\IniFileLoader" public="false">
+      <tag name="translation.loader" alias="ini"/>
+    </service>
+    <service id="translation.loader.json" class="Symfony\Component\Translation\Loader\JsonFileLoader" public="false">
+      <tag name="translation.loader" alias="json"/>
+    </service>
+    <service id="translation.dumper.php" class="Symfony\Component\Translation\Dumper\PhpFileDumper" public="false">
+      <tag name="translation.dumper" alias="php"/>
+    </service>
+    <service id="translation.dumper.xliff" class="Symfony\Component\Translation\Dumper\XliffFileDumper" public="false">
+      <tag name="translation.dumper" alias="xlf"/>
+    </service>
+    <service id="translation.dumper.po" class="Symfony\Component\Translation\Dumper\PoFileDumper" public="false">
+      <tag name="translation.dumper" alias="po"/>
+    </service>
+    <service id="translation.dumper.mo" class="Symfony\Component\Translation\Dumper\MoFileDumper" public="false">
+      <tag name="translation.dumper" alias="mo"/>
+    </service>
+    <service id="translation.dumper.yml" class="Symfony\Component\Translation\Dumper\YamlFileDumper" public="false">
+      <tag name="translation.dumper" alias="yml"/>
+    </service>
+    <service id="translation.dumper.yaml" class="Symfony\Component\Translation\Dumper\YamlFileDumper" public="false">
+      <tag name="translation.dumper" alias="yaml"/>
+      <argument>yaml</argument>
+    </service>
+    <service id="translation.dumper.qt" class="Symfony\Component\Translation\Dumper\QtFileDumper" public="false">
+      <tag name="translation.dumper" alias="ts"/>
+    </service>
+    <service id="translation.dumper.csv" class="Symfony\Component\Translation\Dumper\CsvFileDumper" public="false">
+      <tag name="translation.dumper" alias="csv"/>
+    </service>
+    <service id="translation.dumper.ini" class="Symfony\Component\Translation\Dumper\IniFileDumper" public="false">
+      <tag name="translation.dumper" alias="ini"/>
+    </service>
+    <service id="translation.dumper.json" class="Symfony\Component\Translation\Dumper\JsonFileDumper" public="false">
+      <tag name="translation.dumper" alias="json"/>
+    </service>
+    <service id="translation.dumper.res" class="Symfony\Component\Translation\Dumper\IcuResFileDumper" public="false">
+      <tag name="translation.dumper" alias="res"/>
+    </service>
+    <service id="translation.extractor.php" class="Symfony\Component\Translation\Extractor\PhpExtractor" public="false">
+      <tag name="translation.extractor" alias="php"/>
+    </service>
+    <service id="translation.reader" class="Symfony\Component\Translation\Reader\TranslationReader" public="false">
+      <call method="addLoader">
+        <argument>php</argument>
+        <argument type="service" id="translation.loader.php"/>
+      </call>
+      <call method="addLoader">
+        <argument>yaml</argument>
+        <argument type="service" id="translation.loader.yml"/>
+      </call>
+      <call method="addLoader">
+        <argument>yml</argument>
+        <argument type="service" id="translation.loader.yml"/>
+      </call>
+      <call method="addLoader">
+        <argument>xlf</argument>
+        <argument type="service" id="translation.loader.xliff"/>
+      </call>
+      <call method="addLoader">
+        <argument>xliff</argument>
+        <argument type="service" id="translation.loader.xliff"/>
+      </call>
+      <call method="addLoader">
+        <argument>po</argument>
+        <argument type="service" id="translation.loader.po"/>
+      </call>
+      <call method="addLoader">
+        <argument>mo</argument>
+        <argument type="service" id="translation.loader.mo"/>
+      </call>
+      <call method="addLoader">
+        <argument>ts</argument>
+        <argument type="service" id="translation.loader.qt"/>
+      </call>
+      <call method="addLoader">
+        <argument>csv</argument>
+        <argument type="service" id="translation.loader.csv"/>
+      </call>
+      <call method="addLoader">
+        <argument>res</argument>
+        <argument type="service" id="translation.loader.res"/>
+      </call>
+      <call method="addLoader">
+        <argument>dat</argument>
+        <argument type="service" id="translation.loader.dat"/>
+      </call>
+      <call method="addLoader">
+        <argument>ini</argument>
+        <argument type="service" id="translation.loader.ini"/>
+      </call>
+      <call method="addLoader">
+        <argument>json</argument>
+        <argument type="service" id="translation.loader.json"/>
+      </call>
+    </service>
+    <service id="translation.extractor" class="Symfony\Component\Translation\Extractor\ChainExtractor" public="false">
+      <call method="addExtractor">
+        <argument>php</argument>
+        <argument type="service" id="translation.extractor.php"/>
+      </call>
+      <call method="addExtractor">
+        <argument>twig</argument>
+        <argument type="service" id="twig.translation.extractor"/>
+      </call>
+    </service>
+    <service id="translation.writer" class="Symfony\Component\Translation\Writer\TranslationWriter" public="false">
+      <call method="addDumper">
+        <argument>php</argument>
+        <argument type="service" id="translation.dumper.php"/>
+      </call>
+      <call method="addDumper">
+        <argument>xlf</argument>
+        <argument type="service" id="translation.dumper.xliff"/>
+      </call>
+      <call method="addDumper">
+        <argument>po</argument>
+        <argument type="service" id="translation.dumper.po"/>
+      </call>
+      <call method="addDumper">
+        <argument>mo</argument>
+        <argument type="service" id="translation.dumper.mo"/>
+      </call>
+      <call method="addDumper">
+        <argument>yml</argument>
+        <argument type="service" id="translation.dumper.yml"/>
+      </call>
+      <call method="addDumper">
+        <argument>yaml</argument>
+        <argument type="service" id="translation.dumper.yaml"/>
+      </call>
+      <call method="addDumper">
+        <argument>ts</argument>
+        <argument type="service" id="translation.dumper.qt"/>
+      </call>
+      <call method="addDumper">
+        <argument>csv</argument>
+        <argument type="service" id="translation.dumper.csv"/>
+      </call>
+      <call method="addDumper">
+        <argument>ini</argument>
+        <argument type="service" id="translation.dumper.ini"/>
+      </call>
+      <call method="addDumper">
+        <argument>json</argument>
+        <argument type="service" id="translation.dumper.json"/>
+      </call>
+      <call method="addDumper">
+        <argument>res</argument>
+        <argument type="service" id="translation.dumper.res"/>
+      </call>
+    </service>
+    <service id="translation.warmer" class="Symfony\Bundle\FrameworkBundle\CacheWarmer\TranslationsCacheWarmer" public="false">
+      <tag name="container.service_subscriber" id="translator"/>
+      <tag name="kernel.cache_warmer"/>
+      <argument type="service" id=".service_locator._pu.0Tb.translation.warmer"/>
+    </service>
+    <service id="translator_listener" class="Symfony\Component\HttpKernel\EventListener\TranslatorListener" public="false">
+      <tag name="kernel.event_subscriber"/>
+      <tag name="container.hot_path"/>
+      <tag name="container.hot_path"/>
+      <argument type="service" id="translator.data_collector"/>
+      <argument type="service" id="request_stack"/>
+    </service>
+    <service id="profiler" class="Symfony\Component\HttpKernel\Profiler\Profiler" public="true">
+      <tag name="monolog.logger" channel="profiler"/>
+      <tag name="kernel.reset" method="reset"/>
+      <argument type="service" id="profiler.storage"/>
+      <argument type="service" id="logger" on-invalid="null"/>
+      <argument>true</argument>
+      <call method="add">
+        <argument type="service" id="data_collector.request"/>
+      </call>
+      <call method="add">
+        <argument type="service" id="api_platform.data_collector.request"/>
+      </call>
+      <call method="add">
+        <argument type="service" id="data_collector.time"/>
+      </call>
+      <call method="add">
+        <argument type="service" id="data_collector.memory"/>
+      </call>
+      <call method="add">
+        <argument type="service" id="data_collector.validator"/>
+      </call>
+      <call method="add">
+        <argument type="service" id="data_collector.ajax"/>
+      </call>
+      <call method="add">
+        <argument type="service" id="data_collector.exception"/>
+      </call>
+      <call method="add">
+        <argument type="service" id="data_collector.logger"/>
+      </call>
+      <call method="add">
+        <argument type="service" id="data_collector.events"/>
+      </call>
+      <call method="add">
+        <argument type="service" id="data_collector.router"/>
+      </call>
+      <call method="add">
+        <argument type="service" id="data_collector.cache"/>
+      </call>
+      <call method="add">
+        <argument type="service" id="data_collector.translation"/>
+      </call>
+      <call method="add">
+        <argument type="service" id="data_collector.security"/>
+      </call>
+      <call method="add">
+        <argument type="service" id="data_collector.twig"/>
+      </call>
+      <call method="add">
+        <argument type="service" id="data_collector.doctrine"/>
+      </call>
+      <call method="add">
+        <argument type="service" id="data_collector.config"/>
+      </call>
+    </service>
+    <service id="profiler.storage" class="Symfony\Component\HttpKernel\Profiler\FileProfilerStorage" public="false">
+      <argument>file:/var/www/html/app/var/cache/dev/profiler</argument>
+    </service>
+    <service id="profiler_listener" class="Symfony\Component\HttpKernel\EventListener\ProfilerListener" public="false">
+      <tag name="kernel.event_subscriber"/>
+      <tag name="container.hot_path"/>
+      <argument type="service" id="profiler"/>
+      <argument type="service" id="request_stack"/>
+      <argument>null</argument>
+      <argument>false</argument>
+      <argument>false</argument>
+    </service>
+    <service id="data_collector.config" class="Symfony\Component\HttpKernel\DataCollector\ConfigDataCollector" public="false">
+      <tag name="data_collector" template="@WebProfiler/Collector/config.html.twig" id="config" priority="-255"/>
+      <call method="setKernel">
+        <argument type="service" id="kernel" on-invalid="ignore"/>
+      </call>
+    </service>
+    <service id="data_collector.request" class="Symfony\Component\HttpKernel\DataCollector\RequestDataCollector" public="false">
+      <tag name="kernel.event_subscriber"/>
+      <tag name="data_collector" template="@WebProfiler/Collector/request.html.twig" id="request" priority="335"/>
+      <tag name="container.hot_path"/>
+      <tag name="container.hot_path"/>
+    </service>
+    <service id="data_collector.ajax" class="Symfony\Component\HttpKernel\DataCollector\AjaxDataCollector" public="false">
+      <tag name="data_collector" template="@WebProfiler/Collector/ajax.html.twig" id="ajax" priority="315"/>
+    </service>
+    <service id="data_collector.exception" class="Symfony\Component\HttpKernel\DataCollector\ExceptionDataCollector" public="false">
+      <tag name="data_collector" template="@WebProfiler/Collector/exception.html.twig" id="exception" priority="305"/>
+    </service>
+    <service id="data_collector.events" class="Symfony\Component\HttpKernel\DataCollector\EventDataCollector" public="false">
+      <tag name="data_collector" template="@WebProfiler/Collector/events.html.twig" id="events" priority="290"/>
+      <argument type="service" id="debug.event_dispatcher" on-invalid="ignore"/>
+    </service>
+    <service id="data_collector.logger" class="Symfony\Component\HttpKernel\DataCollector\LoggerDataCollector" public="false">
+      <tag name="data_collector" template="@WebProfiler/Collector/logger.html.twig" id="logger" priority="300"/>
+      <tag name="monolog.logger" channel="profiler"/>
+      <argument type="service" id="logger" on-invalid="ignore"/>
+      <argument>/var/www/html/app/var/cache/dev/srcApp_KernelDevDebugContainer</argument>
+      <argument type="service" id="request_stack" on-invalid="ignore"/>
+    </service>
+    <service id="data_collector.time" class="Symfony\Component\HttpKernel\DataCollector\TimeDataCollector" public="false">
+      <tag name="data_collector" template="@WebProfiler/Collector/time.html.twig" id="time" priority="330"/>
+      <argument type="service" id="kernel" on-invalid="ignore"/>
+      <argument type="service" id="debug.stopwatch" on-invalid="ignore"/>
+    </service>
+    <service id="data_collector.memory" class="Symfony\Component\HttpKernel\DataCollector\MemoryDataCollector" public="false">
+      <tag name="data_collector" template="@WebProfiler/Collector/memory.html.twig" id="memory" priority="325"/>
+    </service>
+    <service id="data_collector.router" class="Symfony\Bundle\FrameworkBundle\DataCollector\RouterDataCollector" public="false">
+      <tag name="kernel.event_listener" event="kernel.controller" method="onKernelController"/>
+      <tag name="data_collector" template="@WebProfiler/Collector/router.html.twig" id="router" priority="285"/>
+      <tag name="container.hot_path"/>
+    </service>
+    <service id="data_collector.cache" class="Symfony\Component\Cache\DataCollector\CacheDataCollector" public="false">
+      <tag name="data_collector" template="@WebProfiler/Collector/cache.html.twig" id="cache" priority="275"/>
+      <call method="addInstance">
+        <argument>cache.app</argument>
+        <argument type="service" id="cache.app"/>
+      </call>
+      <call method="addInstance">
+        <argument>cache.system</argument>
+        <argument type="service" id="cache.system"/>
+      </call>
+      <call method="addInstance">
+        <argument>cache.validator</argument>
+        <argument type="service" id="cache.validator"/>
+      </call>
+      <call method="addInstance">
+        <argument>cache.serializer</argument>
+        <argument type="service" id="cache.serializer"/>
+      </call>
+      <call method="addInstance">
+        <argument>cache.annotations</argument>
+        <argument type="service" id="cache.annotations"/>
+      </call>
+      <call method="addInstance">
+        <argument>cache.security_expression_language</argument>
+        <argument type="service" id="cache.security_expression_language"/>
+      </call>
+      <call method="addInstance">
+        <argument>api_platform.cache.route_name_resolver</argument>
+        <argument type="service" id="api_platform.cache.route_name_resolver"/>
+      </call>
+      <call method="addInstance">
+        <argument>api_platform.cache.identifiers_extractor</argument>
+        <argument type="service" id="api_platform.cache.identifiers_extractor"/>
+      </call>
+      <call method="addInstance">
+        <argument>api_platform.cache.subresource_operation_factory</argument>
+        <argument type="service" id="api_platform.cache.subresource_operation_factory"/>
+      </call>
+      <call method="addInstance">
+        <argument>api_platform.cache.metadata.resource</argument>
+        <argument type="service" id="api_platform.cache.metadata.resource"/>
+      </call>
+      <call method="addInstance">
+        <argument>api_platform.cache.metadata.property</argument>
+        <argument type="service" id="api_platform.cache.metadata.property"/>
+      </call>
+    </service>
+    <service id="debug.validator" class="Symfony\Component\Validator\Validator\TraceableValidator" public="false">
+      <tag name="kernel.reset" method="reset"/>
+      <argument type="service" id="debug.validator.inner"/>
+    </service>
+    <service id="data_collector.validator" class="Symfony\Component\Validator\DataCollector\ValidatorDataCollector" public="false">
+      <tag name="data_collector" template="@WebProfiler/Collector/validator.html.twig" id="validator" priority="320"/>
+      <argument type="service" id="debug.validator"/>
+    </service>
+    <service id="translator.data_collector" class="Symfony\Component\Translation\DataCollectorTranslator" public="false">
+      <argument type="service" id="translator.default"/>
+    </service>
+    <service id="data_collector.translation" class="Symfony\Component\Translation\DataCollector\TranslationDataCollector" public="false">
+      <tag name="data_collector" template="@WebProfiler/Collector/translation.html.twig" id="translation" priority="275"/>
+      <argument type="service" id="translator.data_collector"/>
+    </service>
     <service id=".cache_connection.GD_MSZC" class="Symfony\Component\Cache\Adapter\AbstractAdapter" public="false">
       <argument>redis://localhost</argument>
       <argument type="collection">
@@ -929,6 +1650,9 @@
     </service>
     <service id="debug.file_link_formatter" class="Symfony\Component\HttpKernel\Debug\FileLinkFormatter" public="false">
       <argument>null</argument>
+      <argument type="service" id="request_stack" on-invalid="ignore"/>
+      <argument>/var/www/html/app</argument>
+      <argument type="service" id="debug.file_link_formatter.url_format"/>
     </service>
     <service id="debug.stopwatch" class="Symfony\Component\Stopwatch\Stopwatch">
       <tag name="kernel.reset" method="reset"/>
@@ -947,6 +1671,14 @@
           <argument>onKernelException</argument>
         </argument>
         <argument>-2048</argument>
+      </call>
+      <call method="addListener">
+        <argument>kernel.controller</argument>
+        <argument type="collection">
+          <argument type="service" id="data_collector.router"/>
+          <argument>onKernelController</argument>
+        </argument>
+        <argument>0</argument>
       </call>
       <call method="addListener">
         <argument>kernel.request</argument>
@@ -1175,13 +1907,61 @@
       <call method="addListener">
         <argument>kernel.request</argument>
         <argument type="collection">
-          <argument type="service" id="debug.debug_handlers_listener"/>
-          <argument>configure</argument>
+          <argument type="service" id="translator_listener"/>
+          <argument>onKernelRequest</argument>
         </argument>
-        <argument>2048</argument>
+        <argument>10</argument>
       </call>
       <call method="addListener">
-        <argument>console.command</argument>
+        <argument>kernel.finish_request</argument>
+        <argument type="collection">
+          <argument type="service" id="translator_listener"/>
+          <argument>onKernelFinishRequest</argument>
+        </argument>
+        <argument>0</argument>
+      </call>
+      <call method="addListener">
+        <argument>kernel.response</argument>
+        <argument type="collection">
+          <argument type="service" id="profiler_listener"/>
+          <argument>onKernelResponse</argument>
+        </argument>
+        <argument>-100</argument>
+      </call>
+      <call method="addListener">
+        <argument>kernel.exception</argument>
+        <argument type="collection">
+          <argument type="service" id="profiler_listener"/>
+          <argument>onKernelException</argument>
+        </argument>
+        <argument>0</argument>
+      </call>
+      <call method="addListener">
+        <argument>kernel.terminate</argument>
+        <argument type="collection">
+          <argument type="service" id="profiler_listener"/>
+          <argument>onKernelTerminate</argument>
+        </argument>
+        <argument>-1024</argument>
+      </call>
+      <call method="addListener">
+        <argument>kernel.controller</argument>
+        <argument type="collection">
+          <argument type="service" id="data_collector.request"/>
+          <argument>onKernelController</argument>
+        </argument>
+        <argument>0</argument>
+      </call>
+      <call method="addListener">
+        <argument>kernel.response</argument>
+        <argument type="collection">
+          <argument type="service" id="data_collector.request"/>
+          <argument>onKernelResponse</argument>
+        </argument>
+        <argument>0</argument>
+      </call>
+      <call method="addListener">
+        <argument>kernel.request</argument>
         <argument type="collection">
           <argument type="service" id="debug.debug_handlers_listener"/>
           <argument>configure</argument>
@@ -1299,6 +2079,14 @@
           <argument>onConsoleTerminate</argument>
         </argument>
         <argument>0</argument>
+      </call>
+      <call method="addListener">
+        <argument>kernel.response</argument>
+        <argument type="collection">
+          <argument type="service" id="web_profiler.debug_toolbar"/>
+          <argument>onKernelResponse</argument>
+        </argument>
+        <argument>-128</argument>
       </call>
     </service>
     <service id="debug.controller_resolver" class="Symfony\Component\HttpKernel\Controller\TraceableControllerResolver" public="false">
@@ -1710,6 +2498,9 @@
       <call method="addExtension">
         <argument type="service" id="doctrine.twig.doctrine_extension"/>
       </call>
+      <call method="addExtension">
+        <argument type="service" id="twig.extension.webprofiler"/>
+      </call>
       <call method="addGlobal">
         <argument>app</argument>
         <argument type="service" id="twig.app_variable"/>
@@ -1797,6 +2588,14 @@
         <argument>!ApiPlatform</argument>
       </call>
       <call method="addPath">
+        <argument>/var/www/html/app/vendor/symfony/web-profiler-bundle/Resources/views</argument>
+        <argument>WebProfiler</argument>
+      </call>
+      <call method="addPath">
+        <argument>/var/www/html/app/vendor/symfony/web-profiler-bundle/Resources/views</argument>
+        <argument>!WebProfiler</argument>
+      </call>
+      <call method="addPath">
         <argument>/var/www/html/app/templates</argument>
       </call>
     </service>
@@ -1814,7 +2613,7 @@
     </service>
     <service id="twig.extension.trans" class="Symfony\Bridge\Twig\Extension\TranslationExtension" public="false">
       <tag name="twig.extension"/>
-      <argument>null</argument>
+      <argument type="service" id="translator.data_collector" on-invalid="null"/>
     </service>
     <service id="twig.extension.assets" class="Symfony\Bridge\Twig\Extension\AssetExtension" public="false">
       <tag name="twig.extension"/>
@@ -1859,6 +2658,10 @@
     <service id="twig.extension.weblink" class="Symfony\Bridge\Twig\Extension\WebLinkExtension" public="false">
       <tag name="twig.extension"/>
       <argument type="service" id="request_stack"/>
+    </service>
+    <service id="twig.translation.extractor" class="Symfony\Bridge\Twig\Translation\TwigExtractor" public="false">
+      <tag name="translation.extractor" alias="twig"/>
+      <argument type="service" id="twig"/>
     </service>
     <service id="twig.exception_listener" class="Symfony\Component\HttpKernel\EventListener\ExceptionListener" public="false">
       <tag name="kernel.event_subscriber"/>
@@ -2029,14 +2832,9 @@
       <argument type="service" id="security.token_storage"/>
       <argument type="service" id="security.encoder_factory.generic"/>
     </service>
-    <service id="cache.security_expression_language" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+    <service id="cache.security_expression_language" class="Symfony\Component\Cache\Adapter\TraceableAdapter" public="false">
       <tag name="cache.pool"/>
-      <argument>OT46-AcS6P</argument>
-      <argument>0</argument>
-      <argument>%container.build_id%</argument>
-      <argument>/var/www/html/app/var/cache/dev/pools</argument>
-      <argument type="service" id="logger" on-invalid="ignore"/>
-      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+      <argument type="service" id="cache.security_expression_language.recorder_inner"/>
     </service>
     <service id="security.authentication.listener.anonymous" class="Symfony\Component\Security\Http\Firewall\AnonymousAuthenticationListener" public="false">
       <tag name="monolog.logger" channel="security"/>
@@ -3172,32 +3970,17 @@
       <argument type="service" id="api_platform.cache.subresource_operation_factory"/>
       <argument type="service" id="api_platform.subresource_operation_factory.cached.inner"/>
     </service>
-    <service id="api_platform.cache.route_name_resolver" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+    <service id="api_platform.cache.route_name_resolver" class="Symfony\Component\Cache\Adapter\TraceableAdapter" public="false">
       <tag name="cache.pool"/>
-      <argument>DZZaEsUddr</argument>
-      <argument>0</argument>
-      <argument>%container.build_id%</argument>
-      <argument>/var/www/html/app/var/cache/dev/pools</argument>
-      <argument type="service" id="logger" on-invalid="ignore"/>
-      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+      <argument type="service" id="api_platform.cache.route_name_resolver.recorder_inner"/>
     </service>
-    <service id="api_platform.cache.identifiers_extractor" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+    <service id="api_platform.cache.identifiers_extractor" class="Symfony\Component\Cache\Adapter\TraceableAdapter" public="false">
       <tag name="cache.pool"/>
-      <argument>Gcv+1jUjIr</argument>
-      <argument>0</argument>
-      <argument>%container.build_id%</argument>
-      <argument>/var/www/html/app/var/cache/dev/pools</argument>
-      <argument type="service" id="logger" on-invalid="ignore"/>
-      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+      <argument type="service" id="api_platform.cache.identifiers_extractor.recorder_inner"/>
     </service>
-    <service id="api_platform.cache.subresource_operation_factory" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+    <service id="api_platform.cache.subresource_operation_factory" class="Symfony\Component\Cache\Adapter\TraceableAdapter" public="false">
       <tag name="cache.pool"/>
-      <argument>DDppDljyKS</argument>
-      <argument>0</argument>
-      <argument>%container.build_id%</argument>
-      <argument>/var/www/html/app/var/cache/dev/pools</argument>
-      <argument type="service" id="logger" on-invalid="ignore"/>
-      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+      <argument type="service" id="api_platform.cache.subresource_operation_factory.recorder_inner"/>
     </service>
     <service id="api_platform.cache_warmer.cache_pool_clearer" class="ApiPlatform\Core\Bridge\Symfony\Bundle\CacheWarmer\CachePoolClearerCacheWarmer" public="false">
       <tag name="kernel.cache_warmer" priority="64"/>
@@ -3224,10 +4007,20 @@
     </service>
     <service id="api_platform.filter_locator" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
       <tag name="container.service_locator"/>
-      <argument type="collection"/>
+      <argument type="collection">
+        <argument key="annotated_app_entity_cheese_listing_api_platform_core_bridge_doctrine_orm_filter_boolean_filter" type="service" id="annotated_app_entity_cheese_listing_api_platform_core_bridge_doctrine_orm_filter_boolean_filter"/>
+        <argument key="annotated_app_entity_cheese_listing_api_platform_core_bridge_doctrine_orm_filter_range_filter" type="service" id="annotated_app_entity_cheese_listing_api_platform_core_bridge_doctrine_orm_filter_range_filter"/>
+        <argument key="annotated_app_entity_cheese_listing_api_platform_core_bridge_doctrine_orm_filter_search_filter" type="service" id="annotated_app_entity_cheese_listing_api_platform_core_bridge_doctrine_orm_filter_search_filter"/>
+        <argument key="annotated_app_entity_cheese_listing_api_platform_core_serializer_filter_property_filter" type="service" id="annotated_app_entity_cheese_listing_api_platform_core_serializer_filter_property_filter"/>
+      </argument>
     </service>
     <service id="api_platform.filter_collection_factory" class="ApiPlatform\Core\Api\FilterCollectionFactory" public="false">
-      <argument type="collection"/>
+      <argument type="collection">
+        <argument>annotated_app_entity_cheese_listing_api_platform_core_bridge_doctrine_orm_filter_boolean_filter</argument>
+        <argument>annotated_app_entity_cheese_listing_api_platform_core_bridge_doctrine_orm_filter_search_filter</argument>
+        <argument>annotated_app_entity_cheese_listing_api_platform_core_bridge_doctrine_orm_filter_range_filter</argument>
+        <argument>annotated_app_entity_cheese_listing_api_platform_core_serializer_filter_property_filter</argument>
+      </argument>
     </service>
     <service id="api_platform.filters" class="ApiPlatform\Core\Api\FilterCollection" public="false">
       <argument type="service" id="api_platform.filter_locator"/>
@@ -3286,23 +4079,13 @@
       <argument type="service" id="api_platform.cache.metadata.property"/>
       <argument type="service" id="api_platform.metadata.property.metadata_factory.validator"/>
     </service>
-    <service id="api_platform.cache.metadata.resource" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+    <service id="api_platform.cache.metadata.resource" class="Symfony\Component\Cache\Adapter\TraceableAdapter" public="false">
       <tag name="cache.pool"/>
-      <argument>PFe87b7cw7</argument>
-      <argument>0</argument>
-      <argument>%container.build_id%</argument>
-      <argument>/var/www/html/app/var/cache/dev/pools</argument>
-      <argument type="service" id="logger" on-invalid="ignore"/>
-      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+      <argument type="service" id="api_platform.cache.metadata.resource.recorder_inner"/>
     </service>
-    <service id="api_platform.cache.metadata.property" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+    <service id="api_platform.cache.metadata.property" class="Symfony\Component\Cache\Adapter\TraceableAdapter" public="false">
       <tag name="cache.pool"/>
-      <argument>U9y9zIQUIV</argument>
-      <argument>0</argument>
-      <argument>%container.build_id%</argument>
-      <argument>/var/www/html/app/var/cache/dev/pools</argument>
-      <argument type="service" id="logger" on-invalid="ignore"/>
-      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+      <argument type="service" id="api_platform.cache.metadata.property.recorder_inner"/>
     </service>
     <service id="api_platform.metadata.extractor.xml" class="ApiPlatform\Core\Metadata\Extractor\XmlExtractor" public="false">
       <argument type="collection"/>
@@ -3660,11 +4443,11 @@
       <argument type="service" id="api_platform.metadata.resource.metadata_factory.cached"/>
     </service>
     <service id="api_platform.validator" class="ApiPlatform\Core\Bridge\Symfony\Validator\Validator">
-      <argument type="service" id="validator"/>
+      <argument type="service" id="debug.validator"/>
       <argument type="service" id="service_container"/>
     </service>
     <service id="api_platform.metadata.property.metadata_factory.validator" class="ApiPlatform\Core\Bridge\Symfony\Validator\Metadata\Property\ValidatorPropertyMetadataFactory" public="false">
-      <argument type="service" id="validator"/>
+      <argument type="service" id="debug.validator"/>
       <argument type="service" id="api_platform.metadata.property.metadata_factory.yaml"/>
     </service>
     <service id="api_platform.listener.view.validate" class="ApiPlatform\Core\Validator\EventListener\ValidateListener">
@@ -3860,6 +4643,101 @@
     <service id="maker.maker.make_migration" class="Symfony\Bundle\MakerBundle\Maker\MakeMigration" public="false">
       <tag name="maker.command"/>
       <argument>/var/www/html/app</argument>
+    </service>
+    <service id=".2_HtmlDumper~PvwBt4c" class="Symfony\Component\VarDumper\Dumper\HtmlDumper" public="false">
+      <argument>null</argument>
+      <argument>UTF-8</argument>
+      <argument>1</argument>
+      <call method="setDisplayOptions">
+        <argument type="collection">
+          <argument key="maxStringLength">4096</argument>
+          <argument key="fileLinkFormat" type="service" id="debug.file_link_formatter"/>
+        </argument>
+      </call>
+    </service>
+    <service id=".1_NonceGenerator~PvwBt4c" class="Symfony\Bundle\WebProfilerBundle\Csp\NonceGenerator" public="false"/>
+    <service id="web_profiler.controller.profiler" class="Symfony\Bundle\WebProfilerBundle\Controller\ProfilerController" public="true">
+      <argument type="service" id="router.default" on-invalid="null"/>
+      <argument type="service" id="profiler" on-invalid="null"/>
+      <argument type="service" id="twig"/>
+      <argument>%data_collector.templates%</argument>
+      <argument type="service" id="web_profiler.csp.handler"/>
+      <argument>/var/www/html/app</argument>
+    </service>
+    <service id="web_profiler.controller.router" class="Symfony\Bundle\WebProfilerBundle\Controller\RouterController" public="true">
+      <argument type="service" id="profiler" on-invalid="null"/>
+      <argument type="service" id="twig"/>
+      <argument type="service" id="router.default" on-invalid="null"/>
+    </service>
+    <service id="web_profiler.controller.exception" class="Symfony\Bundle\WebProfilerBundle\Controller\ExceptionController" public="true">
+      <argument type="service" id="profiler" on-invalid="null"/>
+      <argument type="service" id="twig"/>
+      <argument>true</argument>
+      <argument type="service" id="debug.file_link_formatter"/>
+    </service>
+    <service id="web_profiler.csp.handler" class="Symfony\Bundle\WebProfilerBundle\Csp\ContentSecurityPolicyHandler" public="false">
+      <argument type="service" id=".1_NonceGenerator~PvwBt4c"/>
+    </service>
+    <service id="twig.extension.webprofiler" class="Symfony\Bundle\WebProfilerBundle\Twig\WebProfilerExtension" public="false">
+      <tag name="twig.extension"/>
+      <argument type="service" id=".2_HtmlDumper~PvwBt4c"/>
+    </service>
+    <service id="debug.file_link_formatter.url_format" class="string" public="false">
+      <argument type="service" id="router.default"/>
+      <argument>_profiler_open_file</argument>
+      <argument>?file=%%f&amp;line=%%l#line%%l</argument>
+      <factory class="Symfony\Component\HttpKernel\Debug\FileLinkFormatter" method="generateUrlFormat"/>
+    </service>
+    <service id="web_profiler.debug_toolbar" class="Symfony\Bundle\WebProfilerBundle\EventListener\WebDebugToolbarListener" public="false">
+      <tag name="kernel.event_subscriber"/>
+      <tag name="container.hot_path"/>
+      <argument type="service" id="twig"/>
+      <argument>false</argument>
+      <argument>2</argument>
+      <argument type="service" id="router.default" on-invalid="ignore"/>
+      <argument>^/((index|app(_[\w]+)?)\.php/)?_wdt</argument>
+      <argument type="service" id="web_profiler.csp.handler"/>
+    </service>
+    <service id="annotated_app_entity_cheese_listing_api_platform_core_bridge_doctrine_orm_filter_boolean_filter" class="ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter" public="false" autowire="true">
+      <tag name="api_platform.filter"/>
+      <argument type="service" id="doctrine"/>
+      <argument>null</argument>
+      <argument type="service" id="logger" on-invalid="ignore"/>
+      <argument type="collection">
+        <argument key="isPublished">null</argument>
+      </argument>
+      <argument type="service" id="serializer.name_converter.metadata_aware" on-invalid="ignore"/>
+    </service>
+    <service id="annotated_app_entity_cheese_listing_api_platform_core_bridge_doctrine_orm_filter_search_filter" class="ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter" public="false" autowire="true">
+      <tag name="api_platform.filter"/>
+      <argument type="service" id="doctrine"/>
+      <argument>null</argument>
+      <argument type="service" id="api_platform.iri_converter"/>
+      <argument type="service" id="property_accessor"/>
+      <argument type="service" id="logger" on-invalid="ignore"/>
+      <argument type="collection">
+        <argument key="title">partial</argument>
+        <argument key="description">title</argument>
+      </argument>
+      <argument type="service" id="api_platform.identifiers_extractor.cached" on-invalid="ignore"/>
+      <argument type="service" id="serializer.name_converter.metadata_aware" on-invalid="ignore"/>
+    </service>
+    <service id="annotated_app_entity_cheese_listing_api_platform_core_bridge_doctrine_orm_filter_range_filter" class="ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter" public="false" autowire="true">
+      <tag name="api_platform.filter"/>
+      <argument type="service" id="doctrine"/>
+      <argument>null</argument>
+      <argument type="service" id="logger" on-invalid="ignore"/>
+      <argument type="collection">
+        <argument key="price">null</argument>
+      </argument>
+      <argument type="service" id="serializer.name_converter.metadata_aware" on-invalid="ignore"/>
+    </service>
+    <service id="annotated_app_entity_cheese_listing_api_platform_core_serializer_filter_property_filter" class="ApiPlatform\Core\Serializer\Filter\PropertyFilter" public="false" autowire="true">
+      <tag name="api_platform.filter"/>
+      <argument>properties</argument>
+      <argument>false</argument>
+      <argument>null</argument>
+      <argument type="service" id="serializer.name_converter.metadata_aware" on-invalid="ignore"/>
     </service>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\CheeseListingRepository" class="App\Repository\CheeseListingRepository" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Repository\CheeseListingRepository" class="App\Repository\CheeseListingRepository" autowire="true" autoconfigure="true" abstract="true"/>
@@ -4077,6 +4955,22 @@
         <argument key="validator.expression" type="service" id="validator.expression"/>
       </argument>
     </service>
+    <service id=".service_locator.yQVjGlt" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="translation.loader.csv" type="service" id="translation.loader.csv"/>
+        <argument key="translation.loader.dat" type="service" id="translation.loader.dat"/>
+        <argument key="translation.loader.ini" type="service" id="translation.loader.ini"/>
+        <argument key="translation.loader.json" type="service" id="translation.loader.json"/>
+        <argument key="translation.loader.mo" type="service" id="translation.loader.mo"/>
+        <argument key="translation.loader.php" type="service" id="translation.loader.php"/>
+        <argument key="translation.loader.po" type="service" id="translation.loader.po"/>
+        <argument key="translation.loader.qt" type="service" id="translation.loader.qt"/>
+        <argument key="translation.loader.res" type="service" id="translation.loader.res"/>
+        <argument key="translation.loader.xliff" type="service" id="translation.loader.xliff"/>
+        <argument key="translation.loader.yml" type="service" id="translation.loader.yml"/>
+      </argument>
+    </service>
     <service id=".service_locator.gmwRZ3h" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -4162,6 +5056,18 @@
         <argument key="security.token_storage" type="service" id="security.token_storage"/>
       </argument>
     </service>
+    <service id=".service_locator._pu.0Tb" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="translator" type="service" id="translator.data_collector"/>
+      </argument>
+    </service>
+    <service id=".service_locator._pu.0Tb.translation.warmer" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
+      <tag name="container.service_locator_context" id="translation.warmer"/>
+      <argument>translation.warmer</argument>
+      <argument type="service" id="service_container"/>
+      <factory service=".service_locator._pu.0Tb" method="withContext"/>
+    </service>
     <service id=".service_locator.MAfdX1A" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -4203,6 +5109,9 @@
       <argument>twig.template_cache_warmer</argument>
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.lSIKWsr" method="withContext"/>
+    </service>
+    <service id="debug.validator.inner" class="Symfony\Component\Validator\Validator\ValidatorInterface" public="false">
+      <factory service="validator.builder" method="getValidator"/>
     </service>
     <service id="debug.event_dispatcher.inner" class="Symfony\Component\EventDispatcher\EventDispatcher" public="false"/>
     <service id="debug.controller_resolver.inner" class="Symfony\Bundle\FrameworkBundle\Controller\ControllerResolver" public="false">
@@ -4313,7 +5222,7 @@
       <argument type="service" id="api_platform.path_segment_name_generator.underscore"/>
     </service>
     <service id="console.command_loader" class="Symfony\Component\Console\CommandLoader\ContainerCommandLoader" public="true">
-      <argument type="service" id=".service_locator.NRWNYeD"/>
+      <argument type="service" id=".service_locator.jG3ZToU"/>
       <argument type="collection">
         <argument key="about">console.command.about</argument>
         <argument key="assets:install">console.command.assets_install</argument>
@@ -4329,6 +5238,9 @@
         <argument key="debug:event-dispatcher">console.command.event_dispatcher_debug</argument>
         <argument key="debug:router">console.command.router_debug</argument>
         <argument key="router:match">console.command.router_match</argument>
+        <argument key="debug:translation">console.command.translation_debug</argument>
+        <argument key="translation:update">console.command.translation_update</argument>
+        <argument key="lint:xliff">console.command.xliff_lint</argument>
         <argument key="lint:yaml">console.command.yaml_lint</argument>
         <argument key="debug:twig">twig.command.debug</argument>
         <argument key="lint:twig">twig.command.lint</argument>
@@ -4390,7 +5302,7 @@
         <argument key="make:migration">maker.auto_command.make_migration</argument>
       </argument>
     </service>
-    <service id=".service_locator.NRWNYeD" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
+    <service id=".service_locator.jG3ZToU" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="console.command.about" type="service" id="console.command.about"/>
@@ -4407,6 +5319,9 @@
         <argument key="console.command.event_dispatcher_debug" type="service" id="console.command.event_dispatcher_debug"/>
         <argument key="console.command.router_debug" type="service" id="console.command.router_debug"/>
         <argument key="console.command.router_match" type="service" id="console.command.router_match"/>
+        <argument key="console.command.translation_debug" type="service" id="console.command.translation_debug"/>
+        <argument key="console.command.translation_update" type="service" id="console.command.translation_update"/>
+        <argument key="console.command.xliff_lint" type="service" id="console.command.xliff_lint"/>
         <argument key="console.command.yaml_lint" type="service" id="console.command.yaml_lint"/>
         <argument key="doctrine.cache_clear_metadata_command" type="service" id="doctrine.cache_clear_metadata_command"/>
         <argument key="doctrine.cache_clear_query_cache_command" type="service" id="doctrine.cache_clear_query_cache_command"/>
@@ -4468,6 +5383,95 @@
         <argument key="twig.command.lint" type="service" id="twig.command.lint"/>
       </argument>
     </service>
+    <service id="cache.app.recorder_inner" class="Symfony\Component\Cache\Adapter\FilesystemAdapter" public="false">
+      <argument>2gEz9VMKll</argument>
+      <argument>0</argument>
+      <argument>/var/www/html/app/var/cache/dev/pools</argument>
+      <argument type="service" id="cache.default_marshaller" on-invalid="ignore"/>
+      <call method="setLogger">
+        <argument type="service" id="logger" on-invalid="ignore"/>
+      </call>
+    </service>
+    <service id="cache.system.recorder_inner" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+      <argument>Y3-3fJ+DJs</argument>
+      <argument>0</argument>
+      <argument>%container.build_id%</argument>
+      <argument>/var/www/html/app/var/cache/dev/pools</argument>
+      <argument type="service" id="logger" on-invalid="ignore"/>
+      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+    </service>
+    <service id="cache.validator.recorder_inner" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+      <argument>cvCnHkHP0n</argument>
+      <argument>0</argument>
+      <argument>%container.build_id%</argument>
+      <argument>/var/www/html/app/var/cache/dev/pools</argument>
+      <argument type="service" id="logger" on-invalid="ignore"/>
+      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+    </service>
+    <service id="cache.serializer.recorder_inner" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+      <argument>lRwmGA0qDR</argument>
+      <argument>0</argument>
+      <argument>%container.build_id%</argument>
+      <argument>/var/www/html/app/var/cache/dev/pools</argument>
+      <argument type="service" id="logger" on-invalid="ignore"/>
+      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+    </service>
+    <service id="cache.annotations.recorder_inner" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+      <argument>b2X2i+aUTz</argument>
+      <argument>0</argument>
+      <argument>%container.build_id%</argument>
+      <argument>/var/www/html/app/var/cache/dev/pools</argument>
+      <argument type="service" id="logger" on-invalid="ignore"/>
+      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+    </service>
+    <service id="cache.security_expression_language.recorder_inner" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+      <argument>OT46-AcS6P</argument>
+      <argument>0</argument>
+      <argument>%container.build_id%</argument>
+      <argument>/var/www/html/app/var/cache/dev/pools</argument>
+      <argument type="service" id="logger" on-invalid="ignore"/>
+      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+    </service>
+    <service id="api_platform.cache.route_name_resolver.recorder_inner" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+      <argument>DZZaEsUddr</argument>
+      <argument>0</argument>
+      <argument>%container.build_id%</argument>
+      <argument>/var/www/html/app/var/cache/dev/pools</argument>
+      <argument type="service" id="logger" on-invalid="ignore"/>
+      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+    </service>
+    <service id="api_platform.cache.identifiers_extractor.recorder_inner" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+      <argument>Gcv+1jUjIr</argument>
+      <argument>0</argument>
+      <argument>%container.build_id%</argument>
+      <argument>/var/www/html/app/var/cache/dev/pools</argument>
+      <argument type="service" id="logger" on-invalid="ignore"/>
+      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+    </service>
+    <service id="api_platform.cache.subresource_operation_factory.recorder_inner" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+      <argument>DDppDljyKS</argument>
+      <argument>0</argument>
+      <argument>%container.build_id%</argument>
+      <argument>/var/www/html/app/var/cache/dev/pools</argument>
+      <argument type="service" id="logger" on-invalid="ignore"/>
+      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+    </service>
+    <service id="api_platform.cache.metadata.resource.recorder_inner" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+      <argument>PFe87b7cw7</argument>
+      <argument>0</argument>
+      <argument>%container.build_id%</argument>
+      <argument>/var/www/html/app/var/cache/dev/pools</argument>
+      <argument type="service" id="logger" on-invalid="ignore"/>
+      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+    </service>
+    <service id="api_platform.cache.metadata.property.recorder_inner" class="Symfony\Component\Cache\Adapter\AdapterInterface" public="false">
+      <argument>U9y9zIQUIV</argument>
+      <argument>0</argument>
+      <argument>%container.build_id%</argument>
+      <argument>/var/www/html/app/var/cache/dev/pools</argument>
+      <argument type="service" id="logger" on-invalid="ignore"/>
+      <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
+    </service>
     <service id=".service_locator.xEWwCJt" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -4492,6 +5496,8 @@
     <service id="Symfony\Component\Cache\Adapter\AdapterInterface" alias="cache.app" public="false"/>
     <service id="Symfony\Contracts\Cache\CacheInterface" alias="cache.app" public="false"/>
     <service id="Symfony\Contracts\Cache\TagAwareCacheInterface" alias="cache.app.taggable" public="false"/>
+    <service id="Symfony\Component\Translation\TranslatorInterface" alias="translator.data_collector" public="false"/>
+    <service id="Symfony\Contracts\Translation\TranslatorInterface" alias="translator.data_collector" public="false"/>
     <service id="Symfony\Component\HttpFoundation\Session\SessionInterface" alias="session" public="false"/>
     <service id="Symfony\Component\HttpFoundation\Session\Storage\SessionStorageInterface" alias="session.storage.native" public="false"/>
     <service id="SessionHandlerInterface" alias="session.handler" public="false"/>
@@ -4502,8 +5508,13 @@
     <service id="Symfony\Component\Security\Csrf\TokenStorage\TokenStorageInterface" alias="security.csrf.token_storage" public="false"/>
     <service id="Symfony\Component\Security\Csrf\CsrfTokenManagerInterface" alias="security.csrf.token_manager" public="false"/>
     <service id="Symfony\Component\Asset\Packages" alias="assets.packages" public="false"/>
-    <service id="Symfony\Component\Validator\Validator\ValidatorInterface" alias="validator" public="false"/>
-    <service id="validator.mapping.class_metadata_factory" alias="validator" public="false"/>
+    <service id="Symfony\Component\Validator\Validator\ValidatorInterface" alias="debug.validator" public="false"/>
+    <service id="validator.mapping.class_metadata_factory" alias="debug.validator" public="false"/>
+    <service id="Symfony\Component\Translation\Reader\TranslationReaderInterface" alias="translation.reader" public="false"/>
+    <service id="Symfony\Component\Translation\Extractor\ExtractorInterface" alias="translation.extractor" public="false"/>
+    <service id="Symfony\Component\Translation\Writer\TranslationWriterInterface" alias="translation.writer" public="false"/>
+    <service id="translator" alias="translator.data_collector" public="true"/>
+    <service id="translator.formatter" alias="translator.formatter.default" public="false"/>
     <service id="cache.default_redis_provider" alias=".cache_connection.GD_MSZC" public="false"/>
     <service id="cache.default_memcached_provider" alias=".cache_connection.JKE6keX" public="false"/>
     <service id="cache.default_pdo_provider" alias="doctrine.dbal.default_connection" public="false"/>
@@ -4630,7 +5641,8 @@
     <service id="api_platform.name_converter" alias="serializer.name_converter.metadata_aware"/>
     <service id="Psr\Log\LoggerInterface" alias="logger" public="false"/>
     <service id=".service_locator.b1qho2Z" alias="api_platform.serializer_locator" public="false"/>
-    <service id=".service_locator.YUq96kP" alias="api_platform.filter_locator" public="false"/>
+    <service id=".service_locator.ie1170O" alias="api_platform.filter_locator" public="false"/>
+    <service id="validator" alias="debug.validator" public="true"/>
     <service id="api_platform.metadata.property.metadata_factory.property_info.inner" alias="api_platform.metadata.property.metadata_factory.xml" public="false"/>
     <service id="api_platform.metadata.property.metadata_factory.inherited.inner" alias="api_platform.metadata.property.metadata_factory.property_info" public="false"/>
     <service id="api_platform.metadata.resource.metadata_factory.annotation.inner" alias="api_platform.metadata.resource.metadata_factory.xml" public="false"/>
@@ -4648,6 +5660,7 @@
     <service id="api_platform.metadata.resource.metadata_factory.operation.inner" alias="api_platform.metadata.resource.filter_metadata_factory.annotation" public="false"/>
     <service id="api_platform.metadata.property.name_collection_factory.inherited.inner" alias="api_platform.metadata.property.name_collection_factory.property_info" public="false"/>
     <service id="api_platform.metadata.resource.metadata_factory.formats.inner" alias="api_platform.metadata.resource.metadata_factory.operation" public="false"/>
+    <service id="translator.data_collector.inner" alias="translator.default" public="false"/>
     <service id="event_dispatcher" alias="debug.event_dispatcher" public="true"/>
     <service id="controller_resolver" alias="debug.controller_resolver" public="false"/>
     <service id="argument_resolver" alias="debug.argument_resolver" public="false"/>

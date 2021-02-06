@@ -15,7 +15,7 @@
                     true,
                 ],
                 'writable' => [
-                    true,
+                    false,
                 ],
                 'required' => [
                     false,
@@ -24,7 +24,7 @@
                     false,
                 ],
                 'initializable' => [
-                    false,
+                    true,
                 ],
             ],
             'Symfony\\Component\\PropertyInfo\\Type' => [
