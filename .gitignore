@@ -1,2 +1,4 @@
 app/vendor
 .idea
+app/var/cache/*
+app/var/log/*
